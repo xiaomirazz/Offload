@@ -21,7 +21,7 @@ unsigned int hook_func(unsigned int hooknum, struct sk_buff * skb, const struct 
 struct net_device *eth0 = NULL;
 struct net_device *wlan0 = NULL;
 
-int       state=0;					
+int state=0;					
 
 //NF_INET_POST_ROUTING
 static struct nf_hook_ops myops = { { NULL, NULL }, hook_func, THIS_MODULE, PF_INET, NF_INET_POST_ROUTING , NF_IP_PRI_MANGLE};
@@ -30,8 +30,6 @@ MODULE_LICENSE("Dual BSD/GPL");
 
 #define NETLINK_TEST 17
 struct sock *nl_sk = NULL;
-
-
 
 /*
 void nl_data_ready (struct sock *sk, int len)
@@ -42,15 +40,15 @@ void nl_data_ready (struct sock *sk, int len)
 
 void test_netlink(struct sk_buff * _skb)
 {
-        struct sk_buff * skb = NULL;
-        struct nlmsghdr * nlh = NULL;
-        u32 pid;
+    struct sk_buff * skb = NULL;
+    struct nlmsghdr * nlh = NULL;
+    u32 pid;
 
         /* wait for message coming down from user-space */
 	if( (skb = skb_get(_skb)) == NULL )
 		return;
 	
-        nlh = (struct nlmsghdr *)skb->data;
+    nlh = (struct nlmsghdr *)skb->data;
 	if(strcmp((char*)NLMSG_DATA(nlh),"w")==0)
 	{
 		state=0;
@@ -61,15 +59,15 @@ void test_netlink(struct sk_buff * _skb)
 		state=1;
 		printk(KERN_INFO "state: %d\n", state);
 	}
-        printk("%s: received netlink message payload:%s\n", __FUNCTION__, (char*)NLMSG_DATA(nlh));
+    printk("%s: received netlink message payload:%s\n", __FUNCTION__, (char*)NLMSG_DATA(nlh));
 
-        pid = nlh->nlmsg_pid; /*pid of sending process */
-        //NETLINK_CB(skb).group = 0; /* not in mcast group */
-        NETLINK_CB(skb).pid = 0;      /* from kernel */
-        //NETLINK_CB(skb).dst_pid = pid;
-        NETLINK_CB(skb).dst_group = 0;  /* unicast */
-        netlink_unicast(nl_sk, skb, pid, MSG_DONTWAIT);
-        //kfree_skb(_skb);
+    pid = nlh->nlmsg_pid; /*pid of sending process */
+    //NETLINK_CB(skb).group = 0; /* not in mcast group */
+    NETLINK_CB(skb).pid = 0;      /* from kernel */
+    //NETLINK_CB(skb).dst_pid = pid;
+    NETLINK_CB(skb).dst_group = 0;  /* unicast */
+    netlink_unicast(nl_sk, skb, pid, MSG_DONTWAIT);
+    //kfree_skb(_skb);
 }
 
 
@@ -79,16 +77,20 @@ uint32_t ctou(char * cip){
 	char * c;
 	uint32_t n=0, t=0;
 	c = cip;
-	if(c == NULL){
+	if(c == NULL)
+	{
 		printk(KERN_ALERT"dest ip didn't be seted!!");
 		return 0;
 	}
 
-	while(*c != '\0'){
-		if((*c >= '0')&&(*c <= '9')){
+	while(*c != '\0')
+	{
+		if((*c >= '0')&&(*c <= '9'))
+		{
 			t = t*10 + (*c)-'0';
 		}
-		else if(*c == '.'){
+		else if(*c == '.')
+		{
 			n += t;
 			t=0;
 			n = n*256;
@@ -104,28 +106,29 @@ uint32_t ctou(char * cip){
 int netbase_init_module(void)
 {
     struct net_device *dev = NULL;
-    for_each_netdev(&init_net,dev){
-	printk(KERN_INFO "dev name: %s\n", dev->name);
-	if(strcmp(dev->name,"eth0")==0)
-	{
-		eth0=dev;
-	}
-	if(strcmp(dev->name,"wlan0")==0)
-	{
-		wlan0=dev;
-	}
-}
-printk(KERN_INFO "eth0 name: %s\n", eth0->name);
-printk(KERN_INFO "wlan0 name: %s\n", wlan0->name);
+    for_each_netdev(&init_net,dev)
+    {
+	    printk(KERN_INFO "dev name: %s\n", dev->name);
+	    if(strcmp(dev->name,"eth0")==0)
+	    {
+		    eth0=dev;
+	    }
+	    if(strcmp(dev->name,"wlan0")==0)
+	    {
+		    wlan0=dev;
+	    }
+    }
+    printk(KERN_INFO "eth0 name: %s\n", eth0->name);
+    printk(KERN_INFO "wlan0 name: %s\n", wlan0->name);
     return 0;
 }
 
 
 /* our own hook function */
-unsigned int hook_func(unsigned int hooknum, struct sk_buff * skb, 
-		       const struct net_device *in,
-	               const struct net_device *out,
-	               int (*okfn)(struct sk_buff *) )
+unsigned int hook_func( unsigned int hooknum, struct sk_buff * skb, 
+		                const struct net_device *in,
+	                    const struct net_device *out,
+	                    int (*okfn)(struct sk_buff *) )
 {
 	struct sk_buff *skb_recv = NULL;
 	struct tcphdr *tcpheader = NULL;
@@ -174,7 +177,6 @@ unsigned int hook_func(unsigned int hooknum, struct sk_buff * skb,
 		}
 		else if(state==0)
 		{
-			
 			ipheader->tos=ipheader->tos|0x00;
 			ipheader->check=0;
 			ipheader->check=ip_fast_csum((unsigned char*)ipheader,ipheader->ihl);
