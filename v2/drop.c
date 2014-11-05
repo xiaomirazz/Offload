@@ -65,17 +65,17 @@ int netbase_init_module(void)
 		wlan0=dev;
 	}
 }
-printk(KERN_INFO "eth0 name: %s\n", eth0->name);
-printk(KERN_INFO "wlan0 name: %s\n", wlan0->name);
+	printk(KERN_INFO "eth0 name: %s\n", eth0->name);
+	printk(KERN_INFO "wlan0 name: %s\n", wlan0->name);
     return 0;
 }
 
 
 /* our own hook function */
-unsigned int hook_func(unsigned int hooknum, struct sk_buff * skb, 
-		       const struct net_device *in,
-	               const struct net_device *out,
-	               int (*okfn)(struct sk_buff *) )
+unsigned int hook_func( unsigned int hooknum, struct sk_buff * skb, 
+						const struct net_device *in,
+						const struct net_device *out,
+						int (*okfn)(struct sk_buff *) )
 {
 	struct sk_buff *skb_recv = NULL;
 	struct tcphdr *tcpheader = NULL;
